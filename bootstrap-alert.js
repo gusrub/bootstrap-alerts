@@ -45,7 +45,7 @@ BootstrapAlert.modal = function(options, callback) {
   $("#bootstrap-alert-modal").remove();
 
   // build the new one and append it to the body
-  var modal = $(this.TEMPLATES.modal.replace("{{content}}", header+body+footer)).appendTo("body");
+  var _modal = $(this.TEMPLATES.modal.replace("{{content}}", header+body+footer)).appendTo("body");
   
   //check size
   if(size != null) {
@@ -63,19 +63,28 @@ BootstrapAlert.modal = function(options, callback) {
     $("#bootstrap-alert-modal-dialog").addClass(size);
   }
 
+  // some helpers methods to show or hide the modal
+  _modal.show = function(){
+    _modal.modal('show');
+  }
+
+  _modal.hide = function(){
+    _modal.modal('hide');
+  }
+
   // build buttons
   $(buttons).each(function(i,e){
     var button = $('<button type="button" data-result="'+e.result+'" class="btn btn-'+e.type+'">'+e.label+'</button>').appendTo("#bootstrap-alert-footer");
 
-    button.click(function(){ 
-      modal.result = e.result;
-      callback(modal); 
+    button.click(function(){
+      _modal.result = e.result;
+      callback(_modal);
     });
   });
 
-  modal.modal();
+  _modal.modal();
 
-  return this;
+  return _modal;
 };
 
 BootstrapAlert.alert = function(options, callback) {
@@ -92,28 +101,34 @@ BootstrapAlert.alert = function(options, callback) {
 
   if (message == null) {
     console.error("You must set a message to be shown");
-    return false; 
+    return false;
   }
 
   if (type == null) {
     console.error("You must set the type of alert to be displayed!");
-    return false;    
+    return false;
   }
 
   // fade out and remove older alert if any
   var target = $("#alerts-container");
+  var _alert = null;
+
   $(target).slideUp(400, function(){
     $("#bootstrap-alert").remove();
 
     if (dismissable) {
-      $(target).append(self.TEMPLATES.dismissableAlert.replace("{{type}}", type).replace("{{content}}", message));
+      _alert = $(self.TEMPLATES.dismissableAlert.replace("{{type}}", type).replace("{{content}}", message)).appendTo(target);
     } else {
-      $(target).append(self.TEMPLATES.alert.replace("{{type}}", type).replace("{{content}}", message));
+      _alert = $(self.TEMPLATES.alert.replace("{{type}}", type).replace("{{content}}", message)).appendTo(target);
     }
 
-    target.slideDown(400, callback);
+    if(callback != null) {
+      target.slideDown(400, callback(_alert));
+    } else {
+      target.slideDown(400);
+    }
 
-  }); 
+  });
 
-  return this;  
+  return _alert;
 };
